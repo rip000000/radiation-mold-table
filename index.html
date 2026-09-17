@@ -1,302 +1,171 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>放疗患者模具拆除统计表</title>
-  <style>
-    * {box-sizing: border-box;font-family: system-ui, -apple-system, sans-serif;margin:0;padding:0;}
-    body {background:#f5f7fa;padding:12px;font-size:14px;}
-    .container {max-width:900px;margin:0 auto;background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px #0002;}
-    .tab-wrap {display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-    .tab-btn {padding:8px 14px;border:none;border-radius:6px;background:#e8edf5;color:#333;cursor:pointer;font-size:14px;}
-    .tab-btn.active {background:#2b6cb0;color:#fff;}
-    .panel {display:none;}
-    .panel.active {display:block;}
-    .form-row {margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-    label {font-weight:500;min-width:70px;}
-    input, select {padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;flex:1;min-width:120px;}
-    button {padding:7px 12px;border:none;border-radius:6px;cursor:pointer;font-size:14px;background:#2b6cb0;color:#fff;}
-    button:disabled {background:#b9c8dd;cursor:not-allowed;}
-    table {width:100%;border-collapse:collapse;margin:12px 0;}
-    th,td {border:1px solid #e2e8f0;padding:9px 6px;text-align:center;}
-    th {background:#edf2f7;}
-    .badge-photon {background:#c6f6d5;color:#22543d;padding:2px 6px;border-radius:4px;font-size:12px;}
-    .badge-heavy {background:#fed7d7;color:#742a2a;padding:2px 6px;border-radius:4px;font-size:12px;}
-    .status-wait {color:#718096;}
-    .status-doc {color:#d69e2e;}
-    .status-tech {color:#3182ce;}
-    .status-arch {color:#38a169;}
-    .tip {padding:8px;background:#e6fffa;border-radius:6px;margin:10px 0;color:#234e52;font-size:13px;}
-    .custom-check{
-      width:20px;height:20px;border:1px solid #666;border-radius:3px;
-      display:inline-flex;align-items:center;justify-content:center;
-      cursor:pointer;font-size:16px;color:#2b6cb0;
-      touch-action: manipulation;
-      user-select:none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放疗患者模具拆除统计表</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system}
+body{padding:12px;background:#f5f7fa}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #ddd}
+select,button{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{background:#2563eb;color:white;border:none}
+button:disabled{background:#aaa}
+.item{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:8px}
+.checkbox{width:22px;height:22px;border:1px solid #666;border-radius:4px;display:grid;place-items:center;cursor:pointer}
+.checkbox.checked{background:#2563eb}
+.checkbox.checked::after{content:"✓";color:#fff}
+.info{flex:1}
+.label{font-size:14px;color:#555}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tab{flex:1;padding:10px;text-align:center;background:#e2e8f0;border-radius:8px;cursor:pointer}
+.tab.active{background:#2563eb;color:#fff}
+</style>
 </head>
 <body>
-<div class="container">
-  <h2 style="text-align:center;margin-bottom:16px">放疗患者模具拆除统计表</h2>
-  <div class="tab-wrap">
-    <button class="tab-btn active" data-tab="doctor">医生工作台</button>
-    <button class="tab-btn" data-tab="tech">技师工作台</button>
-    <button class="tab-btn" data-tab="archive">归档记录</button>
-  </div>
+<div class="tabs">
+  <div class="tab active" data-tab="doctor">医生工作台</div>
+  <div class="tab" data-tab="tech">技师工作台</div>
+</div>
 
-  <div class="panel active" id="panel-doctor">
-    <div class="tip">每周三09:00发布；点击方框勾选患者，点击本行【确认拆除】提交</div>
-    <div class="form-row">
-      <label>选择科室：</label>
-      <select id="doc-dept">
-        <option value="放疗一科">放疗一科</option>
-        <option value="放疗二科">放疗二科</option>
-        <option value="放疗三科">放疗三科</option>
-        <option value="放疗四科">放疗四科</option>
-        <option value="放疗五科">放疗五科</option>
-      </select>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>选择</th>
-          <th>姓名</th>
-          <th>体位</th>
-          <th>模具类型</th>
-          <th>治疗类型</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="doc-table-body"></tbody>
-    </table>
+<!-- 医生工作台 -->
+<div id="tab-doctor" class="tab-content">
+  <div class="card">
+    <h3>选择科室</h3>
+    <select id="deptSelect">
+      <option value="放疗一科">放疗一科</option>
+      <option value="放疗二科">放疗二科</option>
+      <option value="放疗三科">放疗三科</option>
+      <option value="放疗四科">放疗四科</option>
+      <option value="放疗五科">放疗五科</option>
+    </select>
+    <div id="patientListDoctor"></div>
   </div>
+</div>
 
-  <div class="panel" id="panel-tech">
-    <div class="tip">技师录入患者；医生提交后，在此确认执行拆除，确认后自动归档并从当前列表隐藏</div>
-    <div class="form-row">
-      <label>科室</label>
-      <select id="tech-dept">
-        <option>放疗一科</option>
-        <option>放疗二科</option>
-        <option>放疗三科</option>
-        <option>放疗四科</option>
-        <option>放疗五科</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>患者姓名</label><input id="tech-name" placeholder="输入姓名">
-    </div>
-    <div class="form-row">
-      <label>体位</label>
-      <select id="tech-pos">
-        <option>仰卧</option>
-        <option>俯卧</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>模具类型</label>
-      <select id="tech-mold">
-        <option>头模</option>
-        <option>体膜</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>治疗类型</label>
-      <select id="tech-therapy">
-        <option>光子</option>
-        <option>重离子</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <button onclick="addPatient()">新增患者</button>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>科室</th>
-          <th>姓名</th>
-          <th>体位</th>
-          <th>模具类型</th>
-          <th>治疗类型</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="tech-table-body"></tbody>
-    </table>
+<!-- 技师工作台 -->
+<div id="tab-tech" class="tab-content" style="display:none">
+  <div class="card">
+    <h3>录入/编辑患者</h3>
+    <select id="techDept">
+      <option value="放疗一科">放疗一科</option>
+      <option value="放疗二科">放疗二科</option>
+      <option value="放疗三科">放疗三科</option>
+      <option value="放疗四科">放疗四科</option>
+      <option value="放疗五科">放疗五科</option>
+    </select>
+    <input placeholder="患者姓名" id="pName">
+    <select id="pPos">
+      <option value="仰卧">仰卧</option>
+      <option value="俯卧">俯卧</option>
+    </select>
+    <select id="pMold">
+      <option value="头模">头模</option>
+      <option value="体膜">体膜</option>
+    </select>
+    <select id="pBeam">
+      <option value="光子">光子</option>
+      <option value="重离子">重离子</option>
+    </select>
+    <button onclick="addPatient()">新增患者</button>
   </div>
-
-  <div class="panel" id="panel-archive">
-    <div class="tip">已完成拆除归档患者记录，仅查看</div>
-    <table>
-      <thead>
-        <tr>
-          <th>科室</th>
-          <th>姓名</th>
-          <th>体位</th>
-          <th>模具类型</th>
-          <th>治疗类型</th>
-          <th>归档时间</th>
-        </tr>
-      </thead>
-      <tbody id="archive-table-body"></tbody>
-    </table>
+  <div class="card">
+    <h3>待技师确认执行</h3>
+    <div id="patientListTech"></div>
   </div>
 </div>
 
 <script>
-const API_BASE = "/api";
-const STATUS = {
-  WAIT: "待勾选",
-  DOC_CONFIRM: "待技师执行",
-  ARCHIVE: "已归档"
-};
-let patientList = [];
-let archiveList = [];
+const API_BASE = "";
+let currentDept = "放疗一科";
 
-document.querySelectorAll(".tab-btn").forEach(btn=>{
-  btn.onclick = async ()=>{
-    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
-    await fetchAllData();
-  }
+// 切换标签
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const tab = t.dataset.tab;
+  document.getElementById('tab-doctor').style.display = tab==='doctor'?'block':'none';
+  document.getElementById('tab-tech').style.display = tab==='tech'?'block':'none';
+  loadPatients();
 })
+document.getElementById('deptSelect').onchange = e=>{
+  currentDept = e.target.value;
+  loadPatients();
+}
 
-async function fetchAllData(){
-  const res = await fetch(`${API_BASE}/list`);
-  const json = await res.json();
-  patientList = json.patientList;
-  archiveList = json.archiveList;
-  renderAll();
+// 加载患者列表
+async function loadPatients(){
+  const res = await fetch(`${API_BASE}/api/getPatients`);
+  const data = await res.json();
+  const list = data.list.filter(p=>p.dept===currentDept && p.status==="pending");
+
+  const wrapD = document.getElementById('patientListDoctor');
+  wrapD.innerHTML = "";
+  list.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = "item";
+    div.innerHTML = `
+      <div class="checkbox" data-id="${p.id}"></div>
+      <div class="info">
+        <div>${p.name}</div>
+        <div class="label">${p.pos}｜${p.mold}｜${p.beam}</div>
+      </div>
+    `
+    const ck = div.querySelector('.checkbox');
+    ck.onclick = async ()=>{
+      const pid = ck.dataset.id;
+      await fetch(`${API_BASE}/api/confirmDoctor`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({id:pid})
+      })
+      loadPatients();
+    }
+    wrapD.appendChild(div);
+  })
+
+  // 技师列表
+  const wrapT = document.getElementById('patientListTech');
+  wrapT.innerHTML = "";
+  const techList = data.list.filter(p=>p.dept===document.getElementById('techDept').value && p.status==="doctorConfirm");
+  techList.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = "item";
+    div.innerHTML = `
+      <div class="info">
+        <div>${p.name}</div>
+        <div class="label">${p.pos}｜${p.mold}｜${p.beam}</div>
+      </div>
+      <button onclick="techDone('${p.id}')">确认执行归档</button>
+    `
+    wrapT.appendChild(div);
+  })
 }
 
 async function addPatient(){
-  const dept = document.getElementById("tech-dept").value;
-  const name = document.getElementById("tech-name").value.trim();
-  const pos = document.getElementById("tech-pos").value;
-  const mold = document.getElementById("tech-mold").value;
-  const therapy = document.getElementById("tech-therapy").value;
-  if(!name){alert("请输入患者姓名");return;}
-  await fetch(`${API_BASE}/add`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({dept,name,pos,mold,therapy})
-  })
-  document.getElementById("tech-name").value = "";
-  await fetchAllData();
-}
-
-async function toggleCheck(pid){
-  await fetch(`${API_BASE}/toggle-check`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pid})
-  })
-  await fetchAllData();
-}
-
-async function docConfirm(pid){
-  await fetch(`${API_BASE}/doc-confirm`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pid})
-  })
-  await fetchAllData();
-  alert("已提交，待技师执行");
-}
-
-async function techConfirm(pid){
-  await fetch(`${API_BASE}/tech-archive`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pid})
-  })
-  await fetchAllData();
-  alert("已执行拆除，完成归档");
-}
-
-function renderAll(){
-  renderDoctorTable();
-  renderTechTable();
-  renderArchiveTable();
-}
-
-function renderDoctorTable(){
-  const selDept = document.getElementById("doc-dept").value;
-  const tbody = document.getElementById("doc-table-body");
-  tbody.innerHTML = "";
-  const list = patientList.filter(p=>p.dept === selDept && p.status !== STATUS.ARCHIVE);
-  list.forEach(p=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><div class="custom-check" data-pid="${p.id}">${p.checked?"✓":""}</div></td>
-      <td>${p.name}</td>
-      <td>${p.pos}</td>
-      <td>${p.mold}</td>
-      <td><span class="${p.therapy==='光子'?'badge-photon':'badge-heavy'}">${p.therapy}</span></td>
-      <td class="${p.status===STATUS.WAIT?'status-wait':'status-doc'}">${p.status}</td>
-      <td><button data-pid="${p.id}" ${!p.checked ? "disabled":""}>确认拆除</button></td>
-    `;
-    tbody.appendChild(tr);
-  })
-}
-
-const docTableBody = document.getElementById("doc-table-body");
-function handleTableEvent(e){
-  const target = e.target;
-  if(target.classList.contains("custom-check")){
-    const pid = target.dataset.pid;
-    toggleCheck(pid);
-  }else if(target.tagName === "BUTTON" && target.dataset.pid){
-    const pid = target.dataset.pid;
-    docConfirm(pid);
+  const payload = {
+    dept:document.getElementById('techDept').value,
+    name:document.getElementById('pName').value,
+    pos:document.getElementById('pPos').value,
+    mold:document.getElementById('pMold').value,
+    beam:document.getElementById('pBeam').value
   }
-}
-docTableBody.addEventListener("click", handleTableEvent);
-docTableBody.addEventListener("touchend", handleTableEvent);
-
-function renderTechTable(){
-  const tbody = document.getElementById("tech-table-body");
-  tbody.innerHTML = "";
-  patientList.forEach(p=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.dept}</td>
-      <td>${p.name}</td>
-      <td>${p.pos}</td>
-      <td>${p.mold}</td>
-      <td><span class="${p.therapy==='光子'?'badge-photon':'badge-heavy'}">${p.therapy}</span></td>
-      <td class="${p.status===STATUS.WAIT?'status-wait':'status-doc'}">${p.status}</td>
-      <td>${p.status===STATUS.DOC_CONFIRM?`<button onclick="techConfirm('${p.id}')">确认执行拆除</button>`:"-"}</td>
-    `;
-    tbody.appendChild(tr);
+  await fetch(`${API_BASE}/api/getPatients`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
   })
+  loadPatients();
 }
-
-function renderArchiveTable(){
-  const tbody = document.getElementById("archive-table-body");
-  tbody.innerHTML = "";
-  archiveList.forEach(p=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.dept}</td>
-      <td>${p.name}</td>
-      <td>${p.pos}</td>
-      <td>${p.mold}</td>
-      <td><span class="${p.therapy==='光子'?'badge-photon':'badge-heavy'}">${p.therapy}</span></td>
-      <td>${p.archiveTime}</td>
-    `;
-    tbody.appendChild(tr);
+async function techDone(id){
+  await fetch(`${API_BASE}/api/techFinish`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({id})
   })
+  loadPatients();
 }
-
-document.getElementById("doc-dept").addEventListener("change",fetchAllData);
-fetchAllData();
+loadPatients();
 </script>
 </body>
 </html>
