@@ -5,24 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>放疗患者模具拆除统计表</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system}
-body{padding:12px;background:#f5f7fa}
-.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #ddd}
-select,button{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
-button{background:#2563eb;color:white;border:none}
-button:disabled{background:#aaa}
-.item{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:8px}
-.checkbox{width:22px;height:22px;border:1px solid #666;border-radius:4px;display:grid;place-items:center;cursor:pointer}
-.checkbox.checked{background:#2563eb}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,system-ui}
+body{background:#f5f5f9}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px #ddd}
+select,input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{background:#2563eb;color:white;border:none;padding:10px;border-radius:8px}
+button:disabled{background:#94a3b8}
+.item{display:flex;align-items:center;padding:10px;border-bottom:1px solid #eee;gap:12px}
+.checkbox{width:24px;height:24px;border:1px solid #666;border-radius:4px;display:grid;place-items:center;cursor:pointer}
 .checkbox.checked::after{content:"✓";color:#fff}
 .info{flex:1}
 .label{font-size:14px;color:#555}
-.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
 .tab{flex:1;padding:10px;text-align:center;background:#e2e8f0;border-radius:8px;cursor:pointer}
 .tab.active{background:#2563eb;color:#fff}
 </style>
 </head>
-<body>
+<body style="padding:14px">
 <div class="tabs">
   <div class="tab active" data-tab="doctor">医生工作台</div>
   <div class="tab" data-tab="tech">技师工作台</div>
@@ -31,7 +30,7 @@ button:disabled{background:#aaa}
 <!-- 医生工作台 -->
 <div id="tab-doctor" class="tab-content">
   <div class="card">
-    <h3>选择科室</h3>
+    <div class="label">选择科室</div>
     <select id="deptSelect">
       <option value="放疗一科">放疗一科</option>
       <option value="放疗二科">放疗二科</option>
@@ -39,8 +38,8 @@ button:disabled{background:#aaa}
       <option value="放疗四科">放疗四科</option>
       <option value="放疗五科">放疗五科</option>
     </select>
-    <div id="patientListDoctor"></div>
   </div>
+  <div id="patientListDoctor"></div>
 </div>
 
 <!-- 技师工作台 -->
@@ -54,19 +53,22 @@ button:disabled{background:#aaa}
       <option value="放疗四科">放疗四科</option>
       <option value="放疗五科">放疗五科</option>
     </select>
-    <input placeholder="患者姓名" id="pName">
-    <select id="pPos">
+    <input placeholder="患者姓名" id="pname">
+    <select id="pos">
       <option value="仰卧">仰卧</option>
       <option value="俯卧">俯卧</option>
     </select>
-    <select id="pMold">
+    <select id="mold">
       <option value="头模">头模</option>
       <option value="体膜">体膜</option>
     </select>
-    <select id="pBeam">
+    <select id="pbeam">
       <option value="光子">光子</option>
       <option value="重离子">重离子</option>
     </select>
+    <!-- 新增制模日期 -->
+    <label class="label">制模日期</label>
+    <input type="date" id="makeDate">
     <button onclick="addPatient()">新增患者</button>
   </div>
   <div class="card">
@@ -76,95 +78,108 @@ button:disabled{background:#aaa}
 </div>
 
 <script>
-const API_BASE = "";
+const API_BASE = "https://radiation-mold-table.vercel.app";
 let currentDept = "放疗一科";
 
-// 切换标签
+//切换标签
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   const tab = t.dataset.tab;
-  document.getElementById('tab-doctor').style.display = tab==='doctor'?'block':'none';
-  document.getElementById('tab-tech').style.display = tab==='tech'?'block':'none';
+  document.getElementById("tab-doctor").style.display = tab==='doctor'?'block':'none';
+  document.getElementById("tab-tech").style.display = tab==='tech'?'block':'none';
   loadPatients();
 })
-document.getElementById('deptSelect').onchange = e=>{
+
+document.getElementById("deptSelect").onchange = e=>{
   currentDept = e.target.value;
   loadPatients();
 }
 
-// 加载患者列表
+//加载患者列表
 async function loadPatients(){
-  const res = await fetch(`${API_BASE}/api/getPatients`);
+  const res = await fetch(`${API_BASE}/api/list`);
   const data = await res.json();
-  const list = data.list.filter(p=>p.dept===currentDept && p.status==="pending");
-
-  const wrapD = document.getElementById('patientListDoctor');
-  wrapD.innerHTML = "";
+  const list = data.patientList.filter(p=>p.dept===currentDept && p.status==="待勾选");
+  const wrapD = document.getElementById("patientListDoctor");
+  wrapD.innerHTML="";
   list.forEach(p=>{
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div class="checkbox" data-id="${p.id}"></div>
       <div class="info">
-        <div>${p.name}</div>
-        <div class="label">${p.pos}｜${p.mold}｜${p.beam}</div>
+        ${p.name} | ${p.pos} | ${p.mold} | ${p.therapy} | 制模日期:${p.makeDate||'未填写'}
       </div>
-    `
+    `;
+    wrapD.appendChild(div);
     const ck = div.querySelector('.checkbox');
     ck.onclick = async ()=>{
-      const pid = ck.dataset.id;
-      await fetch(`${API_BASE}/api/confirmDoctor`,{
+      ck.classList.toggle("checked");
+      await fetch(`${API_BASE}/api/toggle-check`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({id:pid})
-      })
+        body:JSON.stringify({pid:p.id, checked:ck.classList.contains('checked')})
+      });
+      if(ck.classList.contains('checked') && confirm("确认该患者模具可以拆除？")){
+        await fetch(`${API_BASE}/api/doc-confirm`,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({pid:p.id})
+        })
+      }
       loadPatients();
     }
-    wrapD.appendChild(div);
   })
 
-  // 技师列表
-  const wrapT = document.getElementById('patientListTech');
+  //技师工作台列表
+  const wrapT = document.getElementById("patientListTech");
   wrapT.innerHTML = "";
-  const techList = data.list.filter(p=>p.dept===document.getElementById('techDept').value && p.status==="doctorConfirm");
+  const techDeptVal = document.getElementById("techDept").value;
+  const techList = data.patientList.filter(p=>p.dept===techDeptVal && p.status==="医生已确认拆除");
   techList.forEach(p=>{
-    const div = document.createElement('div');
-    div.className = "item";
-    div.innerHTML = `
-      <div class="info">
-        <div>${p.name}</div>
-        <div class="label">${p.pos}｜${p.mold}｜${p.beam}</div>
-      </div>
-      <button onclick="techDone('${p.id}')">确认执行归档</button>
-    `
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML=`
+      <div class="info">${p.name} | ${p.pos} | ${p.mold} | ${p.therapy} | 制模日期:${p.makeDate||'未填写'}</div>
+      <button onclick="techArchive('${p.id}')">确认执行归档</button>
+    `;
     wrapT.appendChild(div);
   })
 }
 
+//技师归档
+async function techArchive(pid){
+  await fetch(`${API_BASE}/api/tech-archive`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pid})
+  })
+  loadPatients();
+}
+
+//新增患者（增加makeDate提交）
 async function addPatient(){
   const payload = {
-    dept:document.getElementById('techDept').value,
-    name:document.getElementById('pName').value,
-    pos:document.getElementById('pPos').value,
-    mold:document.getElementById('pMold').value,
-    beam:document.getElementById('pBeam').value
+    dept:document.getElementById("techDept").value,
+    name:document.getElementById("pname").value,
+    pos:document.getElementById("pos").value,
+    mold:document.getElementById("mold").value,
+    therapy:document.getElementById("pbeam").value,
+    makeDate:document.getElementById("makeDate").value
   }
-  await fetch(`${API_BASE}/api/getPatients`,{
+  await fetch(`${API_BASE}/api/add`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload)
   })
+  //清空表单
+  document.getElementById("pname").value="";
+  document.getElementById("makeDate").value="";
   loadPatients();
 }
-async function techDone(id){
-  await fetch(`${API_BASE}/api/techFinish`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({id})
-  })
-  loadPatients();
-}
+
+//页面加载自动拉取
 loadPatients();
 </script>
 </body>
