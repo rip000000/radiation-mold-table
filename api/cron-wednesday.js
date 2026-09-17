@@ -18,7 +18,7 @@ export default async function handler(req) {
     return response
   }
   // 下面放原有业务代码
-
+}
 export default async function handler(req, res) {
   const list = await redis.get('patientList') || [];
   const pending = list.filter(p => p.status === "待勾选");
