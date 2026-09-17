@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis'
 const redis = Redis.fromEnv();
+
 export default async function handler(req, res) {
   if(req.method !== 'POST') return res.status(405).end();
   const {dept,name,pos,mold,therapy} = req.body;
@@ -8,8 +9,8 @@ export default async function handler(req, res) {
     id:pid, dept,name,pos,mold,therapy,
     status:"待勾选", checked:false
   };
-  let list = await kv.get('patientList') || [];
+  let list = await redis.get('patientList') || [];
   list.push(newPatient);
-  await kv.set('patientList', list);
+  await redis.set('patientList', list);
   res.status(200).json({ok:true});
 }
