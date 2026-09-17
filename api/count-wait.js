@@ -4,15 +4,26 @@ export const config = {
 import { Redis } from '@upstash/redis'
 const redis = Redis.fromEnv();
 
-export default async function handler(req, res) {
-  const list = await redis.get('patientList') || [];
-  const pending = list.filter(p => p.status === "待勾选");
+export default async function handler(req) {
+  if(req.method !== 'GET'){
+    return new Response(JSON.stringify({error:"Method not allowed"}), {
+      status:405,
+      headers:{'Content-Type':'application/json'}
+    })
+  }
+  const patientList = await redis.get('patientList') || [];
+  // 按科室分组统计
   const stat = {
-    "放疗一科": pending.filter(x=>x.dept==="放疗一科").length,
-    "放疗二科": pending.filter(x=>x.dept==="放疗二科").length,
-    "放疗三科": pending.filter(x=>x.dept==="放疗三科").length,
-    "放疗四科": pending.filter(x=>x.dept==="放疗四科").length,
-    "放疗五科": pending.filter(x=>x.dept==="放疗五科").length,
+    "放疗一科":0,
+    "放疗二科":0,
+    "放疗三科":0,
+    "放疗四科":0,
+    "放疗五科":0
   };
-  res.status(200).json(stat);
+  patientList.forEach(p=>{
+    if(stat.hasOwnProperty(p.dept)) stat[p.dept] +=1;
+  })
+  return new Response(JSON.stringify({stat, total:patientList.length}), {
+    headers:{'Content-Type':'application/json'}
+  })
 }
