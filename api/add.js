@@ -15,5 +15,5 @@ export default async function handler(req, res) {
   let list = await redis.get('patientList') || [];
   list.push(newPatient);
   await redis.set('patientList', list);
-  res.status(200).json({ok:true});
+  return new Response(JSON.stringify({xxx}), {headers:{'Content-Type':'application/json'}})
 }
