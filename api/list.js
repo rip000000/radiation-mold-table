@@ -18,7 +18,7 @@ export default async function handler(req) {
     return response
   }
   // 下面放原有业务代码
-
+}
 export default async function handler(req) {
   if(req.method !== 'GET'){
     return new Response(JSON.stringify({error:"Method not allowed"}), {
