@@ -4,16 +4,18 @@ export const config = {
 import { Redis } from '@upstash/redis'
 const redis = Redis.fromEnv();
 
-export default async function handler(req, res) {
-  if(req.method !== 'POST') return res.status(405).end();
-  const {dept,name,pos,mold,therapy} = req.body;
-  const pid = Date.now().toString();
-  const newPatient = {
-    id:pid, dept,name,pos,mold,therapy,
-    status:"待勾选", checked:false
-  };
-  let list = await redis.get('patientList') || [];
-  list.push(newPatient);
-  await redis.set('patientList', list);
-  return new Response(JSON.stringify({xxx}), {headers:{'Content-Type':'application/json'}})
+export default async function handler(req) {
+  if(req.method !== 'GET'){
+    return new Response(JSON.stringify({error:"Method not allowed"}), {
+      status:405,
+      headers:{'Content-Type':'application/json'}
+    })
+  }
+  const patientList = await redis.get('patientList') || [];
+  const archiveList = await redis.get('archiveList') || [];
+  return new Response(JSON.stringify({ patientList, archiveList }), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 }
