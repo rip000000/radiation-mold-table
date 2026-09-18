@@ -1,4 +1,3 @@
-export const config = { runtime: "edge" };
 export const config = { runtime: 'edge' };
 import { Redis } from '@upstash/redis'
 const redis = Redis.fromEnv();
